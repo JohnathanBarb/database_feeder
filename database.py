@@ -2,15 +2,7 @@ from sqlalchemy.engine import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import insert, delete
 import sys
-
-
-engine = create_engine('sqlite:////home/johnathan/Documents/Projetos/feirinha/db.sqlite3', echo=True)
-Base = declarative_base()
-Base.metadata.reflect(engine)
-
-
-class Produto(Base):
-    __table__ = Base.metadata.tables['hortifruti_produto']
+import argparse
 
 
 def deletetable(table, engine):
@@ -43,11 +35,26 @@ def inserttable(table, engine, csv):
                 conn.execute(stmt)
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        csvpath = sys.argv[1]
+if __name__ == "__main__":   
+    parser = argparse.ArgumentParser(description="Feed a database using csv files.")
+    parser.add_argument('--file', help="csv file")
+    parser.add_argument('--database', help="database url")
+    args = parser.parse_args()
+    if args.database:
+        urldatabase = args.database
+    else:
+        urldatabase = 'sqlite:////home/johnathan/Documents/Projetos/feirinha/db.sqlite3'
+    engine = create_engine(urldatabase, echo=True)
+    Base = declarative_base()
+    Base.metadata.reflect(engine)
+
+    class Produto(Base):
+        __table__ = Base.metadata.tables['hortifruti_produto']
+
+    if args.file:
+        csvpath = args.file
     else:
         folderpath = "/home/johnathan/Documents/Projetos/hortifruti_scrapping/"
         filepath = "output/20210605_hortifrutiestrela.csv"
         csvpath = f'{folderpath}{filepath}'
-    inserttable(Produto, engine, csvpath)          
+    inserttable(Produto, engine, csvpath)         
